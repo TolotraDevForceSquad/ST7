@@ -1,10 +1,11 @@
 import { Routes, Route } from "react-router-dom";
-import Board from "./pages/Board";
+import Etudiant from "./pages/Etudiant";
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Board />} />
+      <Route path="/" element={<Etudiant />} />
+      <Route path="/etudiants" element={<Etudiant />} />
     </Routes>
   );
 }
