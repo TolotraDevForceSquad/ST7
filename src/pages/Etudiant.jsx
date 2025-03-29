@@ -1,22 +1,48 @@
+//Etudiant.jsx
+
+import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
-import Table from "../components/Table";
-import { Search } from "lucide-react";
+import TableEts from "../components/Etudiants/TableEts";
+import { CirclePlus, Search } from "lucide-react";
+import { useEts } from "../contexts/ctx.etudiant";
+import { useNote } from "../contexts/ctx.note";
 
-const TABLE_HEAD = ["Transaction", "Amount", "Date", "Status", "Account", ""];
-
-const TABLE_ROWS = [
-  { name: "Spotify", amount: "$2,500", date: "Wed 3:00pm", status: "paid", account: "visa" },
-  { name: "Amazon", amount: "$5,000", date: "Wed 1:00pm", status: "paid", account: "master-card" },
-  { name: "Pinterest", amount: "$3,400", date: "Mon 7:40pm", status: "pending", account: "master-card" },
-  { name: "Google", amount: "$1,000", date: "Wed 5:00pm", status: "paid", account: "visa" },
-  { name: "Netflix", amount: "$14,000", date: "Wed 3:30am", status: "cancelled", account: "visa" },
-];
-
-const handleEdit = (name) => {
-  alert(`Modifier : ${name}`);
-};
+//etudiant(id_etudiant, nom, moyenne)
 
 function Etudiant() {
+  const {
+    etudiant, setEtudiant,
+    list_etudiants,
+    add_etudiant,
+    id, setId,
+    nom, setNom,
+    moyenne, setMoyenne,
+    del_etudiant,
+    showEts, setShowEts,
+    showUpEts, setShowUpEts,
+    update_etudiant,
+    clearEts, colectEts,
+  } = useEts();
+
+  // const {
+  //   list_notes,
+  // } = useNote();
+
+
+  const headers = ["Nom", "Moyenne", "Actions"];
+
+  const rows = etudiant.map(etu => ({
+    id: etu.id_etudiant,
+    nom: etu.nom,
+    moyenne: etu.moyenne,
+  }));
+
+
+  useEffect(() => {
+    list_etudiants();
+    clearEts();
+  }, []);
+
   return (
     <div className="w-screen h-screen items-center justify-center">
       <div className="bg-white w-screen h-screen shadow-lg flex flex-row p-3">
@@ -32,14 +58,84 @@ function Etudiant() {
                 <input type="text" placeholder="Search" className="w-full px-4 py-2 border rounded-lg pl-10" />
                 <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-500" />
               </div>
-              <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg">
+              <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg" onClick={list_etudiants}>
                 Rechercher
               </button>
             </div>
           </div>
-          <Table headers={TABLE_HEAD} rows={TABLE_ROWS} onEdit={handleEdit} />
+          <TableEts headers={headers} rows={rows} 
+            onEdit={(i,n,m) => {
+              setShowUpEts(true);
+              setShowEts(true);
+              colectEts(i,n,m);
+            }} 
+            onDel={(id) => del_etudiant(id)}
+          />
         </div>
       </div>
+      
+      <div className="fixed bottom-10 right-10">
+        <button className="p-2 rounded-lg" onClick={() => {setShowEts(true);setShowUpEts(false); clearEts();}}>
+          <CirclePlus className="h-16 w-16 text-blue-600 hover:text-gray-600"/>
+        </button>
+      </div>
+  
+      {/* Modal */}
+      {showEts && (
+        <div>
+        <div className="fixed inset-0 bg-gray-700 bg-opacity-50 z-40" onClick={() => setShowEts(false)}></div>
+
+        <div className="absolute flex items-center justify-center top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-lg shadow-2xl z-50 w-96">
+          <div className="text-center">
+            <h2 className="text-2xl font-semibold text-blue-600">Ajouter Etudiant</h2>
+            <form className="flex flex-col gap-4 mt-4">
+              <input 
+                type="text" 
+                placeholder="Nom" 
+                className="px-4 py-2 border rounded-lg" 
+                value={nom}
+                onChange={(e) => setNom(e.target.value)}
+              />
+              <input 
+                type="number" 
+                placeholder="Moyenne" 
+                className="px-4 py-2 border rounded-lg" 
+                value={moyenne}
+                onChange={(e) => setMoyenne(e.target.value)}
+              />
+              <button 
+                type="button"
+                //clicker et ajouter un etudiant
+                onClick={() => {
+                  if (showUpEts) {
+                    // Si showUpEts est true, c'est un update
+                    update_etudiant(id);  
+                  } else {
+                    // Sinon, c'est un add
+                    add_etudiant();  // Fonction d'ajout
+                  }
+                }}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+              >
+                {showUpEts ? "Modifier" : "Ajouter"}
+              </button>
+
+              <button
+                type="button"
+                className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                onClick={() => {
+                  setShowEts(false);
+                  // setShowUpEts(false);
+                }}
+              >
+                Annuler
+              </button>
+            </form>
+          </div>
+        </div>
+        </div>
+      )}
+
     </div>
   );
 }

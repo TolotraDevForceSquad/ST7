@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { GraduationCap, NotebookPen, Inbox, User, Settings, LogOut } from "lucide-react";
+import { GraduationCap, Inbox, User, Settings, LogOut, ClipboardList, Briefcase } from "lucide-react";
 
 function Sidebar() {
   return (
@@ -15,16 +15,16 @@ function Sidebar() {
           </Link>
         </li>
         <li>
-          <Link to="/notes" className="flex items-center p-3 rounded-md hover:bg-gray-100 cursor-pointer">
-            <NotebookPen className="h-5 w-5 mr-3 text-gray-700" />
-            <span>Notes</span>
+          <Link to="/matieres" className="flex items-center p-3 rounded-md hover:bg-gray-100 cursor-pointer">
+            <Briefcase className="h-5 w-5 mr-3 text-gray-700" />
+            <span>Matieres</span>
+            <span className="ml-auto bg-blue-500 text-white text-xs px-2 py-1 rounded-full">14</span>
           </Link>
         </li>
         <li>
-          <Link to="/inbox" className="flex items-center p-3 rounded-md hover:bg-gray-100 cursor-pointer">
-            <Inbox className="h-5 w-5 mr-3 text-gray-700" />
-            <span>Inbox</span>
-            <span className="ml-auto bg-blue-500 text-white text-xs px-2 py-1 rounded-full">14</span>
+          <Link to="/notes" className="flex items-center p-3 rounded-md hover:bg-gray-100 cursor-pointer">
+            <ClipboardList className="h-5 w-5 mr-3 text-gray-700" />
+            <span>Notes</span>
           </Link>
         </li>
         <li>

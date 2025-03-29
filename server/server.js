@@ -56,17 +56,26 @@ app.get('/etudiants/:id', (req, res) => {
 
 // 3. Ajouter un nouvel étudiant
 app.post('/etudiants', (req, res) => {
-    const { nom } = req.body;
-    if (!nom) {
-        return res.status(400).json({ message: 'Le nom est requis' });
+    const { nom, moyenne } = req.body;
+    console.log("Données reçues sur le serveur : ", { nom, moyenne });
+
+    // Vérifier si 'moyenne' est bien un nombre
+    if (isNaN(moyenne) || moyenne === '') {
+        return res.status(400).json({ message: "La moyenne doit être un nombre valide" });
     }
-    db.query('INSERT INTO etudiant (nom, moyenne) VALUES (?, 0)', [nom], (err, results) => {
+
+    db.query('INSERT INTO etudiant (nom, moyenne) VALUES (?, ?)', [nom, moyenne], (err, results) => {
         if (err) {
-            return res.status(500).json({ error: err.message });
+        return res.status(500).json({ error: err.message });
         }
-        res.status(201).json({ id: results.insertId, nom, moyenne: 0 });
+        res.status(201).json({
+        id: results.insertId,
+        nom: nom,
+        moyenne: moyenne
+        });
     });
 });
+  
 
 // 4. Modifier un étudiant
 app.put('/etudiants/:id', (req, res) => {
@@ -174,7 +183,6 @@ app.delete('/matieres/:id', (req, res) => {
 });
 
 // CRUD Notes
-
 // Fonction pour recalculer la moyenne d'un étudiant
 const recalculerMoyenne = (id_etudiant) => {
     db.query(`
@@ -200,7 +208,7 @@ app.post('/notes', (req, res) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
-        recalculerMoyenne(id_etudiant);
+        recalculerMoyenne(id_etudiant); // Recalculer la moyenne après l'ajout de la note
         res.status(201).json({ message: 'Note ajoutée' });
     });
 });
@@ -212,42 +220,69 @@ app.put('/notes/:id', (req, res) => {
     if (note === undefined || note < 0 || note > 20) {
         return res.status(400).json({ message: 'Note invalide' });
     }
-    db.query('UPDATE note SET note = ? WHERE id_note = ?', [note, id], (err, results) => {
+    
+    // Vérifier si la note existe avant de la mettre à jour
+    db.query('SELECT id_etudiant FROM note WHERE id_note = ?', [id], (err, results) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
-        if (results.affectedRows === 0) {
+        if (results.length === 0) {
             return res.status(404).json({ message: 'Note non trouvée' });
         }
-        res.json({ message: 'Note mise à jour' });
+        
+        const id_etudiant = results[0].id_etudiant;
+
+        // Mettre à jour la note
+        db.query('UPDATE note SET note = ? WHERE id_note = ?', [note, id], (err, results) => {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            if (results.affectedRows === 0) {
+                return res.status(404).json({ message: 'Note non trouvée' });
+            }
+            // Recalculer la moyenne après la mise à jour de la note
+            recalculerMoyenne(id_etudiant);
+            res.json({ message: 'Note mise à jour' });
+        });
     });
 });
 
 // 3. Supprimer une note
 app.delete('/notes/:id', (req, res) => {
     const { id } = req.params;
-    db.query('DELETE FROM note WHERE id_note = ?', [id], (err, results) => {
+    db.query('SELECT id_etudiant FROM note WHERE id_note = ?', [id], (err, results) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
-        if (results.affectedRows === 0) {
+        if (results.length === 0) {
             return res.status(404).json({ message: 'Note non trouvée' });
         }
-        res.json({ message: 'Note supprimée' });
+        
+        const id_etudiant = results[0].id_etudiant;
+
+        db.query('DELETE FROM note WHERE id_note = ?', [id], (err, results) => {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            if (results.affectedRows === 0) {
+                return res.status(404).json({ message: 'Note non trouvée' });
+            }
+            // Recalculer la moyenne après la suppression de la note
+            recalculerMoyenne(id_etudiant);
+            res.json({ message: 'Note supprimée' });
+        });
     });
 });
-
 
 // Route pour obtenir les notes d'un étudiant pour chaque matière
 app.get('/notes/:id_etudiant', (req, res) => {
     const id_etudiant = req.params.id_etudiant;
   
-    // Requête SQL pour récupérer les notes de l'étudiant pour chaque matière
     const query = `
       SELECT 
         e.id_etudiant, e.nom AS nom_etudiant,
         m.id_matiere, m.design AS matiere, 
-        n.note 
+        n.note, n.id_note
       FROM note n
       JOIN etudiant e ON e.id_etudiant = n.id_etudiant
       JOIN matiere m ON m.id_matiere = n.id_matiere
@@ -266,10 +301,9 @@ app.get('/notes/:id_etudiant', (req, res) => {
         return;
       }
   
-      // Envoi des résultats sous forme de réponse JSON
       res.json(results);
     });
-  });
+});
 
 
 app.listen(port, () => {
