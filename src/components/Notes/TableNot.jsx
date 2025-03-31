@@ -13,17 +13,17 @@ const TableNot = ({ headers, rows, onEdit, onDel, onNot }) => {
           </tr>
         </thead>
         <tbody>
-          {rows.map(({id, nom, matiere, note }, index) => ( 
+          {rows.map(({id, idEts, idMat, nom, matiere, note }, index) => ( 
             <tr key={index} className="border-t">
-              <td className="px-4 py-2">{id}</td>
+              {/* <td className="px-4 py-2">{id}</td> */}
               <td className="px-4 py-2">{nom}</td>
               <td className="px-4 py-2">{matiere}</td>
               <td className="px-4 py-2">{note}</td>
                 <td className="px-4 py-2">
-                  <button onClick={() => onEdit(id, nom, matiere, note)} className="p-2 rounded-lg hover:bg-gray-200">
+                  <button onClick={() => onEdit(id, idMat, nom, matiere, note)} className="p-2 rounded-lg hover:bg-gray-200">
                     <Pencil className="h-4 w-4 text-gray-600" />
                   </button>
-                  <button onClick={() => onDel(id)} className="p-2 rounded-lg hover:bg-gray-200">
+                  <button onClick={() => onDel(id, idEts)} className="p-2 rounded-lg hover:bg-gray-200">
                     <Trash2Icon className="h-4 w-4 text-red-600"/>
                   </button>
                   {/* <button onClick={() => onNot(id)} className="p-2 rounded-lg hover:bg-gray-200">

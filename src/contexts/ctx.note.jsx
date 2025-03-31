@@ -6,152 +6,138 @@ const ctxNote = createContext();
 
 export const NoteProvider = ({ children }) => {
   const [notes, setNotes] = useState([]);
-  const [idN, setIdN] = useState(null);
-  const [idEtudiant, setIdEtudiant] = useState(null);
-  const [idMatiere, setIdMatiere] = useState();
-  const [note, setNote] = useState("");
 
   const [showNote, setShowNote] = useState(false);
   const [showUpNote, setShowUpNote] = useState(false);
 
-  const clearNote = () => {
-    setIdN(null);
-    setIdEtudiant(null);
-    setIdMatiere(null);
+  const [idMat, setIdMat] = useState("");
+  const [note, setNote] = useState("");
+  const [idNts, setIdNts] = useState("");
+
+  const clearNotes = () => {
     setNote("");
-  };
+    setIdMat("");
+    setIdNts("");
+    console.log("Notes cleared");
+  }
 
-  const colectNote = (id, idEtudiant, idMatiere, note) => {
-    setIdN(id);
-    setIdEtudiant(idEtudiant);
-    setIdMatiere(idMatiere);
-    setNote(note);
-  };
-
-  const list_notes = async (id) => {
+  const list_note_ets = async (id) => {
     try {
       const response = await fetch(`${API_URL}/notes/${id}`);
-      console.log("Status de la réponse :", response.status);
-      
       if (!response.ok) {
         throw new Error("Erreur lors de la récupération des notes");
       }
-
       const data = await response.json();
-      console.log("Données reçues de l'API :", data);
-      setNotes(data);
+
+      // Si les notes sont vides, stocke un tableau vide, sinon stocke les notes récupérées
+      if (data.notes.length === 0) {
+        setNotes([]); // Pas de notes
+      } else {
+        setNotes(data.notes); // Notes récupérées
+      }
     } catch (error) {
       console.error("Erreur:", error);
+      setNotes([]); // En cas d'erreur ou d'absence de notes, on vide le tableau
     }
   };
-    
-  
 
-
-  // Fonction pour ajouter une note
-  const add_note = async () => {
+  const add_note_ets = async (id_etudiant, id_matiere, note) => {
     try {
-      console.log("Tentative d'ajout d'une note avec les données : ", { idEtudiant, idMatiere, note });
+        const response = await fetch(`${API_URL}/notes`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id_etudiant,
+                id_matiere,
+                note
+            })
+        });
 
-      const response = await fetch(`${API_URL}/notes`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id_etudiant: idEtudiant, id_matiere: idMatiere, note }),
-      });
+        if (!response.ok) { // Si la requête a échoué
+            const errorData = await response.json();
+            console.error('Erreur lors de l\'ajout de la note :', errorData.message);
+        } else {
+            const data = await response.json();
+            console.log('Note ajoutée avec succès :', data.message);
+            list_note_ets(id_etudiant);
+            clearNotes();
+            setShowNote(false);
+        }
+    } catch (error) {
+        console.error('Erreur réseau ou serveur :', error.message);
+    }
+};
 
-      console.log("Réponse du serveur reçue:", response);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.log("Réponse d'erreur du serveur:", errorData);
-        throw new Error(errorData.message || "Erreur lors de l'ajout de la note");
+const up_note_ets = async (id_note, id_etudiant, note) => {
+  try {
+      if (note === "" || note < 0 || note > 20) {
+          console.error('Note invalide');
+          return;
       }
 
-      const data = await response.json();
-      console.log("Données reçues après ajout de la note:", data);
-
-      list_notes(idEtudiant); // Rafraîchir la liste des notes pour cet étudiant
-      setShowNote(false);
-
-    } catch (error) {
-      console.error("Erreur lors de l'ajout de la note :", error.message);
-    }
-  };
-
-  // Fonction pour supprimer une note
-  const del_note = async (id) => {
-    try {
-      console.log("Tentative de suppression de la note avec ID:", id);
-
-      const response = await fetch(`${API_URL}/notes/${id}`, {
-        method: "DELETE",
+      const response = await fetch(`${API_URL}/notes/${id_note}`, {
+          method: 'PUT',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+              note
+          })
       });
 
-      console.log("Réponse du serveur:", response);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Erreur lors de la suppression de la note");
+      if (!response.ok) { 
+          const errorData = await response.json();
+          console.error('Erreur lors de la mise à jour de la note :', errorData.message);
+      } else {
+          const data = await response.json();
+          console.log('Note mise à jour avec succès :', data.message);
+          list_note_ets(id_etudiant);
+          setShowNote(false);
+          setShowUpNote(false);
+          clearNotes();
       }
+  } catch (error) {
+      console.error('Erreur réseau ou serveur :', error.message);
+  }
+};
 
-      const data = await response.json();
-      console.log("Données reçues de l'API après suppression de la note:", data);
-
-      list_notes(idEtudiant); // Rafraîchir la liste des notes après la suppression
-    } catch (error) {
-      console.error("Erreur:", error.message);
-    }
-  };
-
-  // Fonction pour mettre à jour une note
-  const update_note = async (id) => {
-    try {
-      console.log("Tentative de modification de la note avec ID:", id);
-
-      const response = await fetch(`${API_URL}/notes/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id_etudiant: idEtudiant, id_matiere: idMatiere, note }),
+const del_note_ets = async (id_note, id_etudiant) => {
+  try {
+      const response = await fetch(`${API_URL}/notes/${id_note}`, {
+          method: 'DELETE',
       });
 
-      console.log("Réponse du serveur:", response);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Erreur lors de la modification de la note");
+      if (!response.ok) { 
+          const errorData = await response.json();
+          console.error('Erreur lors de la suppression de la note :', errorData.message);
+      } else {
+          const data = await response.json();
+          console.log('Note supprimée avec succès :', data.message);
+          list_note_ets(id_etudiant); // On recharge les notes pour l'étudiant concerné
       }
+  } catch (error) {
+      console.error('Erreur réseau ou serveur :', error.message);
+  }
+};
 
-      const data = await response.json();
-      console.log("Données reçues de l'API après modification de la note:", data);
 
-      list_notes(idEtudiant); // Rafraîchir la liste des notes après la modification
-      setShowNote(false);
-      setShowUpNote(false);
-
-    } catch (error) {
-      console.error("Erreur:", error.message);
-    }
-  };
 
   return (
     <ctxNote.Provider
       value={{
         notes, setNotes,
-        list_notes,
-        add_note,
-        idN, setIdN,
-        idEtudiant, setIdEtudiant,
-        idMatiere, setIdMatiere,
-        note, setNote,
-        del_note,
+        list_note_ets,
         showNote, setShowNote,
         showUpNote, setShowUpNote,
-        update_note,
-        clearNote, colectNote,
+        idMat, setIdMat,
+        note, setNote,
+        add_note_ets,
+        clearNotes,
+        idNts, setIdNts,
+        up_note_ets,
+        del_note_ets,
       }}
     >
       {children}
@@ -160,9 +146,9 @@ export const NoteProvider = ({ children }) => {
 };
 
 export const useNote = () => {
-  const context = useContext(ctxNote);
-  if (!context) {
-    throw new Error("Mauvaise utilisation de useNote");
-  }
-  return context;
+    const context = useContext(ctxNote);
+    if (!context) {
+      throw new Error("Mauvaise utilisation de useNote");
+    }
+    return context;
 };

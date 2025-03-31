@@ -277,7 +277,6 @@ app.delete('/notes/:id', (req, res) => {
 // Route pour obtenir les notes d'un étudiant pour chaque matière
 app.get('/notes/:id_etudiant', (req, res) => {
     const id_etudiant = req.params.id_etudiant;
-  
     const query = `
       SELECT 
         e.id_etudiant, e.nom AS nom_etudiant,

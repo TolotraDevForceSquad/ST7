@@ -87,7 +87,7 @@ function Etudiant() {
 
         <div className="absolute flex items-center justify-center top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-lg shadow-2xl z-50 w-96">
           <div className="text-center">
-            <h2 className="text-2xl font-semibold text-blue-600">Ajouter Etudiant</h2>
+            <h2 className="text-2xl font-semibold text-blue-600">{showUpEts ? "Modifier" : "Ajouter"} Etudiant</h2>
             <form className="flex flex-col gap-4 mt-4">
               <input 
                 type="text" 
