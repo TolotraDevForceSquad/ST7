@@ -21,11 +21,25 @@ function Matiere() {
 
   const headers = ["Désignation", "Coefficient", "Actions"];
 
-  const rows = matiere.map(mat => ({
-    id: mat.id_matiere,
-    design: mat.design,
-    coef: mat.coef,
+  const [searchTerm, setSearchTerm] = useState(""); 
+
+  const filteredMatieres = matiere.filter(mat =>
+      mat.design.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      mat.coef.toString().includes(searchTerm)
+  );
+
+  const rows = filteredMatieres.map(mat => ({
+      id: mat.id_matiere,
+      design: mat.design,
+      coef: mat.coef,
   }));
+
+
+  // const rows = matiere.map(mat => ({
+  //   id: mat.id_matiere,
+  //   design: mat.design,
+  //   coef: mat.coef,
+  // }));
 
   useEffect(() => {
     list_matieres();
@@ -42,10 +56,17 @@ function Matiere() {
               <p className="text-gray-600">Vous trouvez ici la liste des matières avec certaines options</p>
             </div>
             <div className="flex items-center gap-2 w-full md:w-auto">
-              <div className="relative w-full md:w-72">
-                <input type="text" placeholder="Search" className="w-full px-4 py-2 border rounded-lg pl-10" />
+            <div className="relative w-full md:w-72">
+                <input
+                    type="text"
+                    placeholder="Rechercher par matière ou coefficient"
+                    className="w-full px-4 py-2 border rounded-lg pl-10"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
                 <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-500" />
-              </div>
+            </div>
+
               <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg" onClick={list_matieres}>
                 Rechercher
               </button>

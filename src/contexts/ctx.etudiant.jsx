@@ -47,7 +47,7 @@ export const EtudiantProvider = ({ children }) => {
   const add_etudiant = async () => {
     try {
       console.log("Tentative d'ajout d'un étudiant avec les données : ", { nom, moyenne });
-  
+      
       const response = await fetch(`${API_URL}/etudiants`, {
         method: "POST",
         headers: {
@@ -98,7 +98,7 @@ export const EtudiantProvider = ({ children }) => {
       const data = await response.json();
       console.log("Données reçues de l'API après suppression:", data);
   
-      list_etudiants(); // Rafraîchir la liste des étudiants après la suppression
+      list_etudiants();
     } catch (error) {
       // Afficher l'erreur détaillée dans la console
       console.error("Erreur:", error.message);

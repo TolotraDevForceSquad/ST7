@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { GraduationCap, Inbox, User, Settings, LogOut, ClipboardList, Briefcase } from "lucide-react";
+import { GraduationCap, Inbox, User, Settings, LogOut, ClipboardList, Briefcase, Archive } from "lucide-react";
 
 function Sidebar() {
   return (
@@ -22,27 +22,9 @@ function Sidebar() {
           </Link>
         </li>
         <li>
-          <Link to="/notes" className="flex items-center p-3 rounded-md hover:bg-gray-100 cursor-pointer">
-            <ClipboardList className="h-5 w-5 mr-3 text-gray-700" />
-            <span>Notes</span>
-          </Link>
-        </li>
-        <li>
-          <Link to="/profile" className="flex items-center p-3 rounded-md hover:bg-gray-100 cursor-pointer">
-            <User className="h-5 w-5 mr-3 text-gray-700" />
-            <span>Profile</span>
-          </Link>
-        </li>
-        <li>
-          <Link to="/settings" className="flex items-center p-3 rounded-md hover:bg-gray-100 cursor-pointer">
-            <Settings className="h-5 w-5 mr-3 text-gray-700" />
-            <span>Settings</span>
-          </Link>
-        </li>
-        <li>
-          <Link to="/logout" className="flex items-center p-3 rounded-md hover:bg-gray-100 cursor-pointer text-red-500">
-            <LogOut className="h-5 w-5 mr-3" />
-            <span>Log Out</span>
+          <Link to="/audit_notes" className="flex items-center p-3 rounded-md hover:bg-gray-100 cursor-pointer">
+            <Archive className="h-5 w-5 mr-3 text-gray-700" />
+            <span>Audit des Notes</span>
           </Link>
         </li>
       </ul>

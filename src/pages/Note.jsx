@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useNote } from "../contexts/ctx.note";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { CirclePlus, Search } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import TableNot from "../components/Notes/TableNot";
@@ -41,19 +41,34 @@ function Note() {
   }, [id]);
 
   const headers = ["Nom", "Matière", "Note", "Actions"];
-  
-  const rows = notes.map(note => ({
-    id: note.id_note,
-    idEts: note.id_etudiant,
-    idMat: note.id_matiere,
-    nom: note.nom_etudiant,
-    matiere: note.matiere,
-    note: note.note
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredNotes = notes.filter(note =>
+      note.nom_etudiant.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      note.matiere.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      note.note.toString().includes(searchTerm)
+  );
+
+  const rows = filteredNotes.map(note => ({
+      id: note.id_note,
+      idEts: note.id_etudiant,
+      idMat: note.id_matiere,
+      nom: note.nom_etudiant,
+      matiere: note.matiere,
+      note: note.note
   }));
 
-  const handleDelete = (id, idEts) => {
-    console.log("Suppression de la note :", { id, idEts });
-  };
+  
+  // const rows = notes.map(note => ({
+  //   id: note.id_note,
+  //   idEts: note.id_etudiant,
+  //   idMat: note.id_matiere,
+  //   nom: note.nom_etudiant,
+  //   matiere: note.matiere,
+  //   note: note.note
+  // }));
+
   
   return (
     <div className="w-screen h-screen items-center justify-center">
@@ -66,10 +81,17 @@ function Note() {
               <p className="text-gray-600">Vous trouvez ici la liste des notes de l'etudiant {notes[0]?.nom_etudiant || ""}</p>
             </div>
             <div className="flex items-center gap-2 w-full md:w-auto">
-              <div className="relative w-full md:w-72">
-                <input type="text" placeholder="Search" className="w-full px-4 py-2 border rounded-lg pl-10" />
-                <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-500" />
-              </div>
+            <div className="relative w-full md:w-72">
+              <input
+                  type="text"
+                  placeholder="Rechercher par étudiant, matière ou note"
+                  className="w-full px-4 py-2 border rounded-lg pl-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-500" />
+          </div>
+
               <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg">
                 Rechercher
               </button>
@@ -147,7 +169,7 @@ function Note() {
                 type="button"
                 onClick={() => {
                   if (showUpNote) {
-                    up_note_ets(idNts, id, note);
+                    up_note_ets(idNts, id, note, idMat);
                   } else {
                     add_note_ets(id, idMat, note);
                   }

@@ -23,23 +23,36 @@ export const NoteProvider = ({ children }) => {
 
   const list_note_ets = async (id) => {
     try {
-      const response = await fetch(`${API_URL}/notes/${id}`);
-      if (!response.ok) {
-        throw new Error("Erreur lors de la récupération des notes");
-      }
-      const data = await response.json();
+        const response = await fetch(`${API_URL}/notes/${id}`);
+        if (!response.ok) {
+            // Si la réponse est vide (pas de notes), on retourne simplement une liste vide
+            if (response.status === 404) {
+                console.log("Aucune note trouvée pour cet étudiant");
+                setNotes([]);
+                return;
+            }
+            throw new Error("Erreur lors de la récupération des notes");
+        }
+        const data = await response.json();
 
-      // Si les notes sont vides, stocke un tableau vide, sinon stocke les notes récupérées
-      if (data.notes.length === 0) {
-        setNotes([]); // Pas de notes
-      } else {
-        setNotes(data.notes); // Notes récupérées
-      }
+        if (!data || !data.notes) { // Vérifie si 'data' est défini et contient 'notes'
+            console.error("Format de données invalide :", data);
+            setNotes([]);
+            return;
+        }
+
+        if (data.notes.length === 0) {
+            setNotes([]);
+        } else {
+            setNotes(data.notes);
+        }
     } catch (error) {
-      console.error("Erreur:", error);
-      setNotes([]); // En cas d'erreur ou d'absence de notes, on vide le tableau
+        console.error("Erreur:", error);
+        setNotes([]);
     }
-  };
+};
+
+
 
   const add_note_ets = async (id_etudiant, id_matiere, note) => {
     try {
@@ -70,10 +83,14 @@ export const NoteProvider = ({ children }) => {
     }
 };
 
-const up_note_ets = async (id_note, id_etudiant, note) => {
+const up_note_ets = async (id_note, id_etudiant, note, id_matiere) => {
   try {
       if (note === "" || note < 0 || note > 20) {
           console.error('Note invalide');
+          return;
+      }
+      if (!id_matiere) {
+          console.error('Matière invalide');
           return;
       }
 
@@ -83,7 +100,8 @@ const up_note_ets = async (id_note, id_etudiant, note) => {
               'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-              note
+              note,
+              id_matiere
           })
       });
 
@@ -92,7 +110,7 @@ const up_note_ets = async (id_note, id_etudiant, note) => {
           console.error('Erreur lors de la mise à jour de la note :', errorData.message);
       } else {
           const data = await response.json();
-          console.log('Note mise à jour avec succès :', data.message);
+          console.log('Note et matière mises à jour avec succès :', data.message);
           list_note_ets(id_etudiant);
           setShowNote(false);
           setShowUpNote(false);
@@ -102,6 +120,7 @@ const up_note_ets = async (id_note, id_etudiant, note) => {
       console.error('Erreur réseau ou serveur :', error.message);
   }
 };
+
 
 const del_note_ets = async (id_note, id_etudiant) => {
   try {
@@ -122,6 +141,31 @@ const del_note_ets = async (id_note, id_etudiant) => {
   }
 };
 
+// audi note 
+
+const [audiNotes, setAuditNotes] = useState([]);
+
+const list_audit_notes = async () => {
+    try {
+        const response = await fetch(`${API_URL}/audit_notes`);
+        
+        if (!response.ok) {
+            throw new Error(`Erreur de récupération des données : ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        setAuditNotes(data.audit_notes);
+
+        // Affiche les données récupérées pour vérifier
+        console.log("Données d'audit récupérées :", data.audit_notes);
+        console.log("Résumé des opérations :", data.summary);
+        
+        return data;
+    } catch (error) {
+        console.error("Erreur lors de la récupération des données :", error.message);
+    }
+};
+
 
 
   return (
@@ -138,6 +182,10 @@ const del_note_ets = async (id_note, id_etudiant) => {
         idNts, setIdNts,
         up_note_ets,
         del_note_ets,
+
+        
+        list_audit_notes,
+        audiNotes, setAuditNotes,
       }}
     >
       {children}

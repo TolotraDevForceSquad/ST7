@@ -28,14 +28,27 @@ function Etudiant() {
   //   list_notes,
   // } = useNote();
 
+  const [searchTerm, setSearchTerm] = useState(""); // Ajouter un état pour la recherche
+
+  const filteredEtudiants = etudiant.filter(etu =>
+      etu.nom.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      etu.moyenne.toString().includes(searchTerm)
+  );
+
+  const rows = filteredEtudiants.map(etu => ({
+      id: etu.id_etudiant,
+      nom: etu.nom,
+      moyenne: etu.moyenne,
+  }));
+
 
   const headers = ["Nom", "Moyenne", "Actions"];
 
-  const rows = etudiant.map(etu => ({
-    id: etu.id_etudiant,
-    nom: etu.nom,
-    moyenne: etu.moyenne,
-  }));
+  // const rows = etudiant.map(etu => ({
+  //   id: etu.id_etudiant,
+  //   nom: etu.nom,
+  //   moyenne: etu.moyenne,
+  // }));
 
 
   useEffect(() => {
@@ -54,10 +67,17 @@ function Etudiant() {
               <p className="text-gray-600">Vous trouvez ici la liste des etudiants avec certaines options</p>
             </div>
             <div className="flex items-center gap-2 w-full md:w-auto">
-              <div className="relative w-full md:w-72">
-                <input type="text" placeholder="Search" className="w-full px-4 py-2 border rounded-lg pl-10" />
+            <div className="relative w-full md:w-72">
+                <input
+                    type="text"
+                    placeholder="Rechercher par nom ou moyenne"
+                    className="w-full px-4 py-2 border rounded-lg pl-10"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)} // Mettre à jour le terme de recherche
+                />
                 <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-500" />
-              </div>
+            </div>
+
               <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg" onClick={list_etudiants}>
                 Rechercher
               </button>
@@ -105,14 +125,12 @@ function Etudiant() {
               />
               <button 
                 type="button"
-                //clicker et ajouter un etudiant
+                
                 onClick={() => {
                   if (showUpEts) {
-                    // Si showUpEts est true, c'est un update
                     update_etudiant(id);  
                   } else {
-                    // Sinon, c'est un add
-                    add_etudiant();  // Fonction d'ajout
+                    add_etudiant();
                   }
                 }}
                 className="bg-blue-500 text-white px-4 py-2 rounded-lg"
